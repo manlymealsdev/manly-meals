@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const points = [
+  'Simple, cheap, delicious meals using beef, chicken, pork, fish, or whatever’s in your fridge on a budget',
+  'Ingredients list first',
+  'Short, clear instructions',
+];
+---
+
+<BaseLayout
+  title="About"
+  description="Straightforward recipes for guys who don't cook. No fluff or stories. Just dinner."
+>
+  <section class="border-b border-line bg-coal-2">
+    <div class="container-mm py-12 sm:py-16">
+      <p class="eyebrow">Who this is for</p>
+      <h1 class="mt-2 font-display text-5xl uppercase leading-none tracking-tight text-ink sm:text-7xl">About</h1>
+    </div>
+  </section>
+
+  <div class="container-mm max-w-prose py-10">
+    <p class="font-heading text-2xl uppercase tracking-wide text-ink sm:text-3xl">
+      Straightforward recipes for guys who don’t cook.
+    </p>
+    <p class="mt-4 text-xl leading-relaxed text-ink">
+      Most recipe websites waste your time with long stories and complicated steps. Here you get exactly what you need:
+    </p>
+
+    <ul class="mt-6 space-y-3">
+      {points.map((p) => (
+        <li class="flex items-start gap-3 rounded-lg border border-line bg-card p-4 text-lg text-ink">
+          <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-sm bg-accent/15 text-accent" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          {p}
+        </li>
+      ))}
+    </ul>
+
+    <p class="mt-8 font-display text-4xl uppercase tracking-wide text-accent">
+      No fluff or stories. Just dinner.
+    </p>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a href="/" class="btn-accent">Browse recipes</a>
+      <a href="/gear" class="btn-ghost">Kitchen gear</a>
+    </div>
+  </div>
+</BaseLayout>

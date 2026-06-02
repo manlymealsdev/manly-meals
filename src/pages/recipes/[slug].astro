@@ -1,0 +1,155 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ServingsScaler from '../../components/ServingsScaler.astro';
+import GearBox from '../../components/GearBox.astro';
+
+export async function getStaticPaths() {
+  const recipes = await getCollection('recipes');
+  return recipes.map((recipe) => ({
+    params: { slug: recipe.slug },
+    props: { recipe },
+  }));
+}
+
+interface Props {
+  recipe: CollectionEntry<'recipes'>;
+}
+const { recipe } = Astro.props;
+const d = recipe.data;
+const totalTime = d.prepTime + d.cookTime;
+
+function ingredientLine(i: { qty: number | null; unit: string; item: string }) {
+  const parts = [];
+  if (i.qty != null) parts.push(String(i.qty));
+  if (i.unit) parts.push(i.unit);
+  parts.push(i.item);
+  return parts.join(' ');
+}
+
+// Recipe structured data (schema.org) for SEO + rich results
+const recipeSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Recipe',
+  name: d.title,
+  description: d.description,
+  image: new URL(d.image, Astro.site).href,
+  recipeCategory: d.category,
+  recipeCuisine: 'American',
+  prepTime: `PT${d.prepTime}M`,
+  cookTime: `PT${d.cookTime}M`,
+  totalTime: `PT${totalTime}M`,
+  recipeYield: `${d.servings} servings`,
+  recipeIngredient: d.ingredients.map(ingredientLine),
+  recipeInstructions: d.instructions.map((step, idx) => ({
+    '@type': 'HowToStep',
+    position: idx + 1,
+    text: step,
+  })),
+  nutrition: {
+    '@type': 'NutritionInformation',
+    calories: `${d.macros.calories} kcal`,
+    proteinContent: `${d.macros.protein} g`,
+    carbohydrateContent: `${d.macros.carbs} g`,
+    fatContent: `${d.macros.fat} g`,
+  },
+  datePublished: d.pubDate.toISOString().split('T')[0],
+  author: { '@type': 'Organization', name: 'Manly Meals' },
+};
+---
+
+<BaseLayout
+  title={d.title}
+  description={d.description}
+  image={d.image}
+  recipeSchema={recipeSchema}
+>
+  <!-- 1. LARGE HERO IMAGE (prominent but contained ~88% width, not full-bleed) -->
+  <div class="mx-auto w-[90%] max-w-3xl pt-5 sm:w-[88%] sm:pt-7">
+    <figure class="relative aspect-[16/10] w-full overflow-hidden rounded-xl2 border border-line bg-coal-2 shadow-card sm:aspect-[16/9]">
+      <img
+        src={d.image}
+        alt={d.imageAlt || d.title}
+        width="1280"
+        height="720"
+        fetchpriority="high"
+        class="h-full w-full object-cover"
+      />
+      <!-- top scrim for badge legibility -->
+      <div class="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-coal/70 to-transparent"></div>
+      <figcaption class="absolute left-0 top-0 p-3 sm:p-4">
+        <a href={`/${d.category.toLowerCase().replace(/ /g, '-')}`} class="inline-flex items-center gap-1.5 rounded-md bg-header/85 px-3 py-1.5 font-heading text-base font-600 uppercase tracking-wide text-accent backdrop-blur">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {d.category}
+        </a>
+      </figcaption>
+    </figure>
+  </div>
+
+  <article class="container-mm max-w-prose pb-10">
+    <div class="pt-6 sm:pt-7">
+      <!-- 2. TITLE (huge bold) -->
+      <h1 class="font-display text-4xl uppercase leading-[0.95] tracking-tight text-ink sm:text-6xl">
+        {d.title}
+      </h1>
+      <p class="mt-3 text-lg text-muted">{d.description}</p>
+
+      <!-- 3. MACROS LINE + PREP / COOK / SERVINGS -->
+      <div class="mt-5 flex flex-wrap gap-2">
+        <span class="rounded-md bg-card px-3 py-2 font-heading text-base font-600 uppercase tracking-wide text-ink">⏱ Prep {d.prepTime}m</span>
+        <span class="rounded-md bg-card px-3 py-2 font-heading text-base font-600 uppercase tracking-wide text-ink">🔥 Cook {d.cookTime}m</span>
+        <span class="rounded-md bg-card px-3 py-2 font-heading text-base font-600 uppercase tracking-wide text-ink">🍽 <span data-servings-out>{d.servings}</span> servings</span>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 rounded-lg border border-line bg-coal-2 px-4 py-3 font-heading text-lg uppercase tracking-wide">
+        <span><span class="text-accent font-700">{d.macros.calories}</span> <span class="text-muted text-base">cal</span></span>
+        <span><span class="text-accent font-700">{d.macros.protein}g</span> <span class="text-muted text-base">protein</span></span>
+        <span><span class="text-accent font-700">{d.macros.carbs}g</span> <span class="text-muted text-base">carbs</span></span>
+        <span><span class="text-accent font-700">{d.macros.fat}g</span> <span class="text-muted text-base">fat</span></span>
+      </div>
+    </div>
+
+    <!-- 4. SERVINGS SCALER (between macros and ingredients) -->
+    <section class="mt-3 rounded-lg border border-accent/40 bg-coal-2 px-4 py-2.5">
+      <ServingsScaler baseServings={d.servings} />
+    </section>
+
+    <!-- 5. INGREDIENTS -->
+    <section class="mt-8">
+      <h2 class="font-display text-3xl uppercase tracking-wide text-ink">Ingredients</h2>
+      <ul class="mt-4 space-y-2">
+        {d.ingredients.map((i) => (
+          <li class="flex items-baseline gap-3 border-b border-line/60 py-2 text-lg">
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-sm bg-accent/15 text-accent" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>
+              {i.qty != null && (
+                <strong class="font-700 text-accent" data-qty={i.qty}>{i.qty}</strong>
+              )}
+              {i.unit && <span class="text-ink"> {i.unit}</span>}
+              <span class="text-ink"> {i.item}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <!-- 6. INSTRUCTIONS -->
+    <section class="mt-10">
+      <h2 class="font-display text-3xl uppercase tracking-wide text-ink">Instructions</h2>
+      <ol class="mt-4 space-y-4">
+        {d.instructions.map((step, idx) => (
+          <li class="flex gap-4">
+            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-accent font-display text-xl text-coal">
+              {idx + 1}
+            </span>
+            <p class="pt-1 text-lg leading-relaxed text-ink">{step}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <!-- 7. GEAR I USED (always at the very bottom) -->
+    <GearBox gear={d.gear} />
+  </article>
+</BaseLayout>

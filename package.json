@@ -1,0 +1,19 @@
+{
+  "name": "manly-meals",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Straightforward recipes for guys who don't cook. Simple. Cheap. Delicious.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.2.1",
+    "@astrojs/tailwind": "^5.1.5",
+    "astro": "^5.2.5",
+    "tailwindcss": "^3.4.17"
+  }
+}

@@ -1,0 +1,84 @@
+---
+interface Props {
+  baseServings: number;
+}
+const { baseServings } = Astro.props;
+const scales = [1, 2, 4];
+---
+
+<div class="flex flex-wrap items-center gap-x-3 gap-y-2" data-scaler data-base-servings={baseServings}>
+  <span class="font-heading text-lg font-600 uppercase tracking-wide text-ink">Scale recipe</span>
+  <div class="inline-flex gap-2" role="group" aria-label="Scale servings">
+    {scales.map((s) => (
+      <button
+        type="button"
+        data-scale={s}
+        aria-pressed={s === 1 ? 'true' : 'false'}
+        class="min-h-[42px] min-w-[52px] rounded-md border border-line bg-card px-3 py-1.5 font-heading text-lg font-700 uppercase tracking-wide text-ink transition-colors hover:border-accent data-[active]:border-accent data-[active]:bg-accent data-[active]:text-coal"
+      >
+        {s}x
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  function fmtQty(n: number): string {
+    const whole = Math.floor(n);
+    const frac = n - whole;
+    const map: Record<string, string> = {
+      '0.25': '¼',
+      '0.33': '⅓',
+      '0.5': '½',
+      '0.67': '⅔',
+      '0.75': '¾',
+    };
+    // Snap to the nearest common fraction
+    let fracStr = '';
+    const candidates = Object.keys(map).map(Number);
+    let best = 0;
+    let bestDiff = 1;
+    for (const c of candidates) {
+      const d = Math.abs(frac - c);
+      if (d < bestDiff) {
+        bestDiff = d;
+        best = c;
+      }
+    }
+    if (frac > 0.05 && bestDiff < 0.08) {
+      fracStr = map[best.toString()];
+      return whole > 0 ? `${whole}${fracStr}` : fracStr;
+    }
+    // Otherwise round to at most 2 decimals, trim trailing zeros
+    const rounded = Math.round(n * 100) / 100;
+    return rounded.toString();
+  }
+
+  function initScaler(root: HTMLElement) {
+    const base = Number(root.dataset.baseServings || '1');
+    const buttons = root.querySelectorAll<HTMLButtonElement>('button[data-scale]');
+    const qtyEls = document.querySelectorAll<HTMLElement>('[data-qty]');
+    const servingsEl = document.querySelector<HTMLElement>('[data-servings-out]');
+
+    function apply(scale: number) {
+      qtyEls.forEach((el) => {
+        const baseQty = Number(el.dataset.qty);
+        if (Number.isNaN(baseQty)) return;
+        el.textContent = fmtQty(baseQty * scale);
+      });
+      if (servingsEl) servingsEl.textContent = String(base * scale);
+      buttons.forEach((b) => {
+        const active = Number(b.dataset.scale) === scale;
+        b.toggleAttribute('data-active', active);
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    buttons.forEach((b) => {
+      b.addEventListener('click', () => apply(Number(b.dataset.scale)));
+    });
+    apply(1);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-scaler]').forEach(initScaler);
+</script>
