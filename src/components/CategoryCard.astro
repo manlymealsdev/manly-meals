@@ -1,0 +1,39 @@
+---
+interface Props {
+  name: string;
+  href: string;
+  blurb: string;
+  count?: number;
+  index?: number;
+}
+const { name, href, blurb, count, index = 0 } = Astro.props;
+const delay = Math.min(index, 8) * 60;
+---
+
+<a
+  href={href}
+  class="group relative flex min-h-[120px] flex-col justify-between overflow-hidden rounded-xl2 border border-line bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-accent hover:shadow-card-hover animate-fade-up"
+  style={`animation-delay:${delay}ms`}
+>
+  <!-- decorative corner accent -->
+  <span class="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-accent/10 transition-transform duration-300 group-hover:scale-150"></span>
+
+  <div>
+    <h3 class="font-display text-3xl uppercase leading-none tracking-wide text-ink transition-colors group-hover:text-accent">
+      {name}
+    </h3>
+    <p class="mt-2 text-sm text-muted">{blurb}</p>
+  </div>
+
+  <div class="mt-4 flex items-center justify-between">
+    {count != null && (
+      <span class="font-heading text-sm font-600 uppercase tracking-wide text-muted">
+        {count} {count === 1 ? 'recipe' : 'recipes'}
+      </span>
+    )}
+    <span class="ml-auto inline-flex items-center gap-1 font-heading text-base font-600 uppercase tracking-wide text-accent">
+      View
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </div>
+</a>

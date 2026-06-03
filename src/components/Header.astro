@@ -1,0 +1,64 @@
+---
+import { NAV_LINKS } from '../data/categories';
+const path = Astro.url.pathname;
+const isActive = (slug: string) => path === slug || path.startsWith(slug + '/');
+---
+
+<header class="sticky top-0 z-50 border-b border-line bg-header/95 backdrop-blur supports-[backdrop-filter]:bg-header/80">
+  <div class="container-mm">
+    <!-- Top row: logo -->
+    <div class="flex h-16 items-center justify-between">
+      <a href="/" class="group flex items-center gap-2" aria-label="Manly Meals home">
+        <span class="grid h-9 w-9 place-items-center rounded-md bg-accent text-coal transition-transform group-hover:rotate-6">
+          <!-- fork + knife mark -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 2v7a2 2 0 0 0 2 2v11M6 2v6M9 2v6M18 2c-1.7 0-3 2-3 5s1 4 2 4v11" stroke="#161A1B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="font-display text-2xl uppercase leading-none tracking-wide text-ink">
+          Manly<span class="text-accent">Meals</span>
+        </span>
+      </a>
+
+      <a
+        href="/gear"
+        aria-current={isActive('/gear') ? 'page' : undefined}
+        class:list={[
+          'inline-flex min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-md border px-4 py-2 font-heading text-lg font-600 uppercase tracking-wide transition-colors',
+          isActive('/gear')
+            ? 'border-accent bg-accent text-coal'
+            : 'border-accent/70 text-accent hover:bg-accent hover:text-coal',
+        ]}
+      >
+        <!-- skillet mark -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 13h12a0 0 0 0 1 0 0v0a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v0a0 0 0 0 1 0 0Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M15 13l6-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Kitchen Tools
+      </a>
+    </div>
+
+    <!-- Nav row: horizontal scroll on mobile, centered/wrapping on desktop -->
+    <nav aria-label="Primary" class="no-scrollbar -mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:overflow-visible sm:px-0">
+      <ul class="flex min-w-max items-center gap-1 sm:min-w-0 sm:flex-wrap sm:gap-1">
+        {NAV_LINKS.map((link) => (
+          <li>
+            <a
+              href={link.slug}
+              aria-current={isActive(link.slug) ? 'page' : undefined}
+              class:list={[
+                'inline-flex min-h-[44px] items-center whitespace-nowrap rounded-md px-3.5 py-2 font-heading text-lg font-600 uppercase tracking-wide transition-colors',
+                isActive(link.slug)
+                  ? 'bg-accent text-coal'
+                  : 'text-ink hover:bg-card hover:text-accent',
+              ]}
+            >
+              {link.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>

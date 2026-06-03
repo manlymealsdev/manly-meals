@@ -1,0 +1,92 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+import { CATEGORIES } from '../data/categories';
+
+const all = await getCollection('recipes');
+const sorted = [...all].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const latest = sorted.slice(0, 6);
+
+// Count recipes per category for the cards
+function countFor(name: string) {
+  if (name === 'Budget Meals')
+    return all.filter((r) => r.data.isBudget || r.data.sections.includes('Budget Meals') || r.data.category === 'Budget Meals').length;
+  if (name === 'Meal Prep' || name === 'Low Carb')
+    return all.filter((r) => r.data.category === name || r.data.sections.includes(name as any)).length;
+  return all.filter((r) => r.data.category === name).length;
+}
+---
+
+<BaseLayout
+  title="Straightforward Recipes for Guys Who Don't Cook"
+  description="Simple. Cheap. Delicious. Straightforward recipes for guys who don't cook. Ingredients first, short steps, no fluff. Just dinner."
+>
+  <!-- HERO -->
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(190,102,0,0.18),transparent_55%)]"></div>
+    <div class="container-mm py-16 sm:py-24">
+      <p class="eyebrow animate-fade-up">No fluff. Just dinner.</p>
+      <h1 class="mt-3 max-w-4xl font-display text-5xl uppercase leading-[0.92] tracking-tight text-ink animate-fade-up sm:text-7xl lg:text-8xl" style="animation-delay:60ms">
+        Straightforward Recipes for Guys Who Don't Cook
+      </h1>
+      <p class="mt-5 font-display text-2xl uppercase tracking-wide text-accent animate-fade-up sm:text-3xl" style="animation-delay:120ms">
+        Simple. Cheap. Delicious.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3 animate-fade-up" style="animation-delay:180ms">
+        <a href="#categories" class="btn-accent">Pick a meal</a>
+        <a href="/budget-meals" class="btn-ghost">Cheap eats</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 CATEGORY CARDS -->
+  <section id="categories" class="container-mm scroll-mt-24 py-12 sm:py-16">
+    <div class="flex items-end justify-between">
+      <div>
+        <p class="eyebrow">Start here</p>
+        <h2 class="mt-1 font-display text-4xl uppercase tracking-wide text-ink sm:text-5xl">What are you cooking?</h2>
+      </div>
+    </div>
+    <div class="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {CATEGORIES.map((c, i) => (
+        <CategoryCard name={c.name} href={c.slug} blurb={c.blurb} count={countFor(c.name)} index={i} />
+      ))}
+    </div>
+  </section>
+
+  <!-- LATEST RECIPES -->
+  {latest.length > 0 && (
+    <section class="bg-coal-2 py-12 sm:py-16">
+      <div class="container-mm">
+        <div class="flex items-end justify-between">
+          <div>
+            <p class="eyebrow">Fresh out the pan</p>
+            <h2 class="mt-1 font-display text-4xl uppercase tracking-wide text-ink sm:text-5xl">Latest Recipes</h2>
+          </div>
+        </div>
+        <div class="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {latest.map((recipe, i) => <RecipeCard recipe={recipe} index={i} />)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- GEAR TEASER -->
+  <section class="container-mm py-12 sm:py-16">
+    <div class="relative overflow-hidden rounded-xl2 border border-line bg-card p-7 sm:p-10">
+      <span class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-accent/10"></span>
+      <div class="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div class="max-w-xl">
+          <p class="eyebrow">The right tools</p>
+          <h2 class="mt-1 font-display text-4xl uppercase tracking-wide text-ink sm:text-5xl">Kitchen Gear</h2>
+          <p class="mt-3 text-lg text-muted">
+            You don't need 50 gadgets. You need about 10. Here's the exact starter kit that handles every recipe on this site.
+          </p>
+        </div>
+        <a href="/gear" class="btn-accent shrink-0">Tools You’ll Need</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

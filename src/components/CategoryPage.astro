@@ -1,0 +1,115 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RecipeCard from './RecipeCard.astro';
+import { getCategory } from '../data/categories';
+
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props;
+const category = getCategory(slug);
+if (!category) throw new Error(`Unknown category slug: ${slug}`);
+
+const SECTION_CATS = ['Meal Prep', 'Low Carb'];
+const isSection = SECTION_CATS.includes(category.name);
+
+const all = await getCollection('recipes');
+const recipes = all
+  .filter((r) =>
+    isSection
+      ? r.data.category === category.name || r.data.sections.includes(category.name as any)
+      : r.data.category === category.name
+  )
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const count = recipes.length;
+---
+
+<BaseLayout
+  title={category.name}
+  description={`${category.name} recipes — ${category.blurb} Simple, cheap, delicious.`}
+>
+  <!-- Category hero -->
+  <section class="border-b border-line bg-coal-2">
+    <div class="container-mm py-10 sm:py-14">
+      <p class="eyebrow">{count} {count === 1 ? 'recipe' : 'recipes'}</p>
+      <h1 class="mt-2 font-display text-5xl uppercase leading-none tracking-tight text-ink sm:text-7xl">
+        {category.name}
+      </h1>
+      <p class="mt-3 max-w-prose text-lg text-muted">{category.blurb}</p>
+    </div>
+  </section>
+
+  <div class="container-mm py-10">
+    <!-- Subcategory cards = quick filters -->
+    {category.subcategories.length > 0 && (
+      <div>
+        <h2 class="sr-only">Browse {category.name} by type</h2>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-filter-group>
+          <button
+            type="button"
+            data-filter="__all"
+            data-active
+            class="min-h-[64px] rounded-xl2 border border-line bg-card px-4 py-3 text-left font-heading text-lg font-600 uppercase tracking-wide text-ink transition-all hover:border-accent data-[active]:border-accent data-[active]:bg-accent data-[active]:text-coal"
+          >
+            All
+          </button>
+          {category.subcategories.map((sub) => (
+            <button
+              type="button"
+              data-filter={sub.name}
+              class="min-h-[64px] rounded-xl2 border border-line bg-card px-4 py-3 text-left font-heading text-lg font-600 uppercase leading-tight tracking-wide text-ink transition-all hover:border-accent data-[active]:border-accent data-[active]:bg-accent data-[active]:text-coal"
+            >
+              {sub.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <!-- Recipe grid -->
+    <div class="mt-8">
+      {count === 0 ? (
+        <p class="rounded-xl2 border border-dashed border-line bg-card p-8 text-center text-muted">
+          No recipes here yet. Check back soon — new ones drop weekly.
+        </p>
+      ) : (
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3" data-recipe-grid>
+          {recipes.map((recipe, i) => <RecipeCard recipe={recipe} index={i} />)}
+        </div>
+      )}
+      <p class="mt-6 hidden text-center text-muted" data-empty-filter>
+        Nothing in that group yet. Tap <strong class="text-accent">All</strong> to see everything.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const group = document.querySelector<HTMLElement>('[data-filter-group]');
+  const grid = document.querySelector<HTMLElement>('[data-recipe-grid]');
+  const emptyMsg = document.querySelector<HTMLElement>('[data-empty-filter]');
+
+  if (group && grid) {
+    const buttons = group.querySelectorAll<HTMLButtonElement>('button[data-filter]');
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('[data-subcategory]'));
+
+    function applyFilter(filter: string) {
+      let visible = 0;
+      cards.forEach((card) => {
+        const show = filter === '__all' || card.dataset.subcategory === filter;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+      buttons.forEach((b) =>
+        b.toggleAttribute('data-active', b.dataset.filter === filter)
+      );
+    }
+
+    buttons.forEach((b) =>
+      b.addEventListener('click', () => applyFilter(b.dataset.filter || '__all'))
+    );
+  }
+</script>

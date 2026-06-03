@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { GEAR, GEAR_GROUPS, BUNDLE, withAffiliateTag } from '../data/gear';
+
+// For items with multiple tiers, show a price RANGE (lowest tier → highest tier)
+// in the orange estimate. Falls back to the single base price otherwise.
+function priceLabel(g: (typeof GEAR)[number]): string | undefined {
+  if (g.tiers && g.tiers.length > 1) {
+    const nums = g.tiers
+      .map((t) => parseInt(t.price.replace(/[^0-9]/g, ''), 10))
+      .filter((n) => !Number.isNaN(n));
+    if (nums.length > 1) {
+      const lo = Math.min(...nums);
+      const hi = Math.max(...nums);
+      if (lo !== hi) return `~$${lo}\u2013$${hi}`;
+    }
+  }
+  return g.price;
+}
+---
+
+<BaseLayout
+  title="Manly Kitchen Gear"
+  description="The exact kitchen gear that handles every recipe on Manly Meals. No 50 gadgets — just the 10 that matter."
+>
+  <section class="border-b border-line bg-coal-2">
+    <div class="container-mm py-12 sm:py-16">
+      <p class="eyebrow">The right tools</p>
+      <h1 class="mt-2 font-display text-5xl uppercase leading-none tracking-tight text-ink sm:text-7xl">
+        Recommended Kitchen Tools
+      </h1>
+      <p class="mt-3 max-w-prose text-lg text-muted">
+        You don’t need fancy equipment. Just a handful of solid, reliable tools that get the job done without breaking the bank.
+      </p>
+    </div>
+  </section>
+
+  <div class="container-mm py-8">
+    <!-- FULL GEAR LIST BY GROUP -->
+    {GEAR_GROUPS.map((group, i) => (
+      <section class={i === 0 ? 'mt-8' : 'mt-10'}>
+        <h2 class="font-display text-3xl uppercase tracking-wide text-ink">{group}</h2>
+        <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {GEAR.filter((g) => g.group === group).map((g) => (
+            <div class:list={[
+              'flex flex-col rounded-xl2 border border-line bg-card px-4 py-3',
+              g.tiers ? 'sm:row-span-2 justify-start' : 'justify-between',
+            ]}>
+              <div>
+                <div class="flex items-start justify-between gap-3">
+                  <h3 class="font-heading text-xl font-600 uppercase leading-tight tracking-wide text-ink">{g.name}</h3>
+                  {priceLabel(g) && <span class="shrink-0 font-heading text-base text-accent">{priceLabel(g)}</span>}
+                </div>
+                <p class="mt-1 text-muted">{g.why}</p>
+              </div>
+
+              {g.tiers ? (
+                <div class="mt-2.5 space-y-1">
+                  {g.tiers.map((t) => (
+                    <a href={withAffiliateTag(t.url)} rel="nofollow sponsored noopener" target="_blank"
+                       class="group flex items-center justify-between gap-3 rounded-lg border border-line bg-coal-2 px-3 py-1.5 transition-colors hover:border-accent">
+                      <span class="min-w-0 leading-tight">
+                        <span class="block font-heading text-xs font-700 uppercase tracking-wider text-accent">{t.label}</span>
+                        <span class="block truncate text-sm text-ink">{t.name}</span>
+                      </span>
+                      <span class="shrink-0 font-heading text-sm font-600 text-muted group-hover:text-ink">{t.price}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <a href={withAffiliateTag(g.url)} rel="nofollow sponsored noopener" target="_blank"
+                   class="btn-accent mt-2.5 w-full text-base">
+                  View on Amazon
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <!-- TOTAL KITCHEN STARTER BUNDLE (compact, moved to bottom) -->
+    <section class="mt-12 rounded-xl2 border border-accent/40 bg-card p-5">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 class="font-display text-2xl uppercase tracking-wide text-ink sm:text-3xl">Total Kitchen Starter Bundle</h2>
+        <p class="font-heading text-sm font-600 uppercase tracking-wide text-muted">
+          Est. total <span class="ml-1 text-accent">~$280–$350</span>
+        </p>
+      </div>
+      <p class="mt-2 max-w-prose text-sm text-muted">
+        Brand new to cooking? This bundle has the reliable tools you’ll actually use and none you won’t.
+      </p>
+
+      <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+        {BUNDLE.map((g) => (
+          <li class="flex items-center justify-between gap-3 rounded-lg border border-line bg-coal-2 px-3 py-2">
+            <div class="min-w-0">
+              <p class="truncate font-heading text-base font-600 uppercase tracking-wide text-ink">{g.name}</p>
+              {g.price && <p class="text-xs text-muted">{g.price}</p>}
+            </div>
+            <a href={withAffiliateTag(g.url)} rel="nofollow sponsored noopener" target="_blank"
+               class="shrink-0 rounded-md bg-accent px-3 py-1.5 font-heading text-xs font-700 uppercase tracking-wide text-coal transition-colors hover:bg-accent-bright">
+              Buy
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

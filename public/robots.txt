@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://manly-meals.com/sitemap-index.xml

@@ -1,0 +1,35 @@
+---
+import { NAV_LINKS } from '../data/categories';
+import { AFFILIATE_DISCLOSURE } from '../data/gear';
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-20 border-t border-line bg-header">
+  <div class="container-mm py-12">
+    <div class="flex flex-col gap-10 md:flex-row md:justify-between">
+      <div class="max-w-sm">
+        <a href="/" class="font-display text-2xl uppercase tracking-wide text-ink">
+          Manly<span class="text-accent">Meals</span>
+        </a>
+        <p class="mt-3 text-muted">
+          Straightforward recipes for guys who don't cook. Simple. Cheap. Delicious.
+        </p>
+      </div>
+
+      <nav aria-label="Footer" class="grid grid-cols-2 gap-x-10 gap-y-2 sm:grid-cols-3">
+        {NAV_LINKS.map((link) => (
+          <a href={link.slug} class="font-heading text-lg uppercase tracking-wide text-muted transition-colors hover:text-accent">
+            {link.name}
+          </a>
+        ))}
+        <a href="/gear" class="font-heading text-lg uppercase tracking-wide text-muted transition-colors hover:text-accent">Gear</a>
+        <a href="/about" class="font-heading text-lg uppercase tracking-wide text-muted transition-colors hover:text-accent">About</a>
+      </nav>
+    </div>
+
+    <div class="mt-10 border-t border-line pt-6 text-sm text-muted">
+      <p>{AFFILIATE_DISCLOSURE}</p>
+      <p class="mt-2">© {year} Manly Meals. No fluff. Just dinner.</p>
+    </div>
+  </div>
+</footer>
