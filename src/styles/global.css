@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-coal text-ink font-body antialiased;
+    /* Subtle layered texture so the dark background has depth, not flatness */
+    background-image:
+      radial-gradient(circle at 18% -10%, rgba(190, 102, 0, 0.10), transparent 42%),
+      radial-gradient(circle at 100% 0%, rgba(190, 102, 0, 0.05), transparent 40%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-heading tracking-tight;
+  }
+
+  /* Larger, comfortable base text on mobile */
+  ::selection {
+    @apply bg-accent text-coal;
+  }
+
+  /* Accessible focus ring */
+  a:focus-visible,
+  button:focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-coal;
+  }
+}
+
+@layer components {
+  .container-mm {
+    @apply mx-auto w-full max-w-content px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Burnt-copper primary button — big thumb-friendly tap target */
+  .btn-accent {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg
+           bg-accent px-6 py-3 font-heading text-lg font-700 uppercase
+           tracking-wide text-coal transition-all duration-200
+           hover:bg-accent-bright hover:shadow-card-hover active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg
+           border border-line bg-card px-6 py-3 font-heading text-lg
+           uppercase tracking-wide text-ink transition-all duration-200
+           hover:border-accent hover:text-accent active:scale-[0.98];
+  }
+
+  /* Section eyebrow label */
+  .eyebrow {
+    @apply font-heading text-sm font-600 uppercase tracking-[0.2em] text-accent;
+  }
+
+  /* Hide scrollbar but keep scrolling (used by the mobile nav) */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
